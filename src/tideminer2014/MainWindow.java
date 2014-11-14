@@ -57,6 +57,7 @@ public class MainWindow extends javax.swing.JFrame {
     DecimalFormat decimalFormat2Places = new DecimalFormat("#.00");
     
     HelpWindow helpWindow;
+    AboutWindow aboutWindow;
     
     /**
      * Creates new form MainWindow
@@ -71,6 +72,9 @@ public class MainWindow extends javax.swing.JFrame {
         
         helpWindow = new HelpWindow();
         helpWindow.setBounds(this.getX()+50, this.getY()+50, helpWindow.getWidth(), helpWindow.getHeight());
+        
+        aboutWindow = new AboutWindow();
+        aboutWindow.setBounds(this.getX()+75, this.getY()+75, aboutWindow.getWidth(), aboutWindow.getHeight());
         
         this.tideIntervals = new ArrayList(200);
         this.elevationQueries = new ArrayList(200);
@@ -428,6 +432,11 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuInfo.setText("Info");
 
         jMenuItemInfoAbout.setText("About");
+        jMenuItemInfoAbout.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemInfoAboutActionPerformed(evt);
+            }
+        });
         jMenuInfo.add(jMenuItemInfoAbout);
 
         jMenuItemInfoHelp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
@@ -473,6 +482,10 @@ public class MainWindow extends javax.swing.JFrame {
     private void jMenuItemInfoHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemInfoHelpActionPerformed
         this.helpWindow.setVisible(true);
     }//GEN-LAST:event_jMenuItemInfoHelpActionPerformed
+
+    private void jMenuItemInfoAboutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemInfoAboutActionPerformed
+        this.aboutWindow.setVisible(true);
+    }//GEN-LAST:event_jMenuItemInfoAboutActionPerformed
     
     private void handleFileLoad(java.awt.event.ActionEvent evt) {  
         try {
