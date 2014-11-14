@@ -54,7 +54,9 @@ public class MainWindow extends javax.swing.JFrame {
 // JFileChooser fileChooser = ...;
 // fileChooser.addChoosableFileFilter(filter);
     
-    DecimalFormat decimalFormat2Places = new DecimalFormat("#.00"); 
+    DecimalFormat decimalFormat2Places = new DecimalFormat("#.00");
+    
+    HelpWindow helpWindow;
     
     /**
      * Creates new form MainWindow
@@ -65,6 +67,11 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     private void myInits() {
+        this.setBounds(100,100, this.getWidth(), this.getHeight());
+        
+        helpWindow = new HelpWindow();
+        helpWindow.setBounds(this.getX()+50, this.getY()+50, helpWindow.getWidth(), helpWindow.getHeight());
+        
         this.tideIntervals = new ArrayList(200);
         this.elevationQueries = new ArrayList(200);
         
@@ -425,6 +432,11 @@ public class MainWindow extends javax.swing.JFrame {
 
         jMenuItemInfoHelp.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F1, 0));
         jMenuItemInfoHelp.setText("Help");
+        jMenuItemInfoHelp.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItemInfoHelpActionPerformed(evt);
+            }
+        });
         jMenuInfo.add(jMenuItemInfoHelp);
 
         jMenuBar1.add(jMenuInfo);
@@ -457,6 +469,10 @@ public class MainWindow extends javax.swing.JFrame {
     private void jButtonAnalyzeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonAnalyzeActionPerformed
         handleAnalysis();
     }//GEN-LAST:event_jButtonAnalyzeActionPerformed
+
+    private void jMenuItemInfoHelpActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemInfoHelpActionPerformed
+        this.helpWindow.setVisible(true);
+    }//GEN-LAST:event_jMenuItemInfoHelpActionPerformed
     
     private void handleFileLoad(java.awt.event.ActionEvent evt) {  
         try {
@@ -467,6 +483,7 @@ public class MainWindow extends javax.swing.JFrame {
             // user selects a file
             File selectedFile = fileChooser.getSelectedFile();
 //            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+            
             // open that file
             // read in the contents, building the arraylist of TideInterval objects in the process
             //    process 1 line at a time, passing to TideInterval string-based constructor w/ pervious line
@@ -528,11 +545,11 @@ public class MainWindow extends javax.swing.JFrame {
         File selectedFile = fileChooser.getSelectedFile();
 //        selectedFile.
         
-        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+//        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
         if (! selectedFile.getAbsolutePath().endsWith(".tab")) {
             selectedFile = new File(selectedFile+".tab");
         }
-        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+//        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
         
         try {
             BufferedWriter out = new BufferedWriter(new FileWriter(selectedFile));

@@ -49,7 +49,7 @@ public class TideInterval {
             return ti;
         }
         catch (Exception exc) {
-            System.out.println(exc.toString());
+//            System.out.println(exc.toString());
 //            System.exit(1);
 //            exc.printStackTrace();
             return new TideInterval(0,0,Instant.now(),Instant.now());
