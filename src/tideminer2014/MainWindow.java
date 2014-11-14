@@ -6,9 +6,12 @@
 package tideminer2014;
 
 import java.awt.Color;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -440,7 +443,7 @@ public class MainWindow extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItemFileLoadActionPerformed
 
     private void jMenuItemFileSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemFileSaveActionPerformed
-        // TODO add your handling code here:
+        handleSaveAnalysis();
     }//GEN-LAST:event_jMenuItemFileSaveActionPerformed
 
     private void jButtonSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonSaveActionPerformed
@@ -460,9 +463,10 @@ public class MainWindow extends javax.swing.JFrame {
             int result = this.fileChooser.showOpenDialog(this);
             if (result != JFileChooser.APPROVE_OPTION) {
                 return;
-            }   // user selects a file
+            }
+            // user selects a file
             File selectedFile = fileChooser.getSelectedFile();
-            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+//            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
             // open that file
             // read in the contents, building the arraylist of TideInterval objects in the process
             //    process 1 line at a time, passing to TideInterval string-based constructor w/ pervious line
@@ -509,10 +513,34 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     private void handleSaveAnalysis() {
+        if (this.tideIntervals.isEmpty() || this.elevationQueries.isEmpty()) {
+            return;
+        }
+        
         // open file dialog & get results
         // open that file as a .tab
         // write to it this.getAnalysisResultsAsTabDelimited()
         // close the file
+        int result = this.fileChooser.showSaveDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) {
+            return;
+        }
+        File selectedFile = fileChooser.getSelectedFile();
+//        selectedFile.
+        
+        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+        if (! selectedFile.getAbsolutePath().endsWith(".tab")) {
+            selectedFile = new File(selectedFile+".tab");
+        }
+        System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+        
+        try {
+            BufferedWriter out = new BufferedWriter(new FileWriter(selectedFile));
+            out.write(getAnalysisResultsAsTabDelimited());
+            out.close();
+        } catch (IOException ex) {
+            System.out.println("error writing to "+selectedFile.getAbsolutePath());
+        }
     }
     
     private void handleAnalysis() {
@@ -637,9 +665,9 @@ public class MainWindow extends javax.swing.JFrame {
         }
         
         tabDelimitedResults += "\n";
-        tabDelimitedResults += "max tide\t"+this.decimalFormat2Places.format(this.maxTideHeight)+"\n";
-        tabDelimitedResults += "median tide\t"+this.decimalFormat2Places.format(this.midEq.getHeight())+"\n";
         tabDelimitedResults += "min tide\t"+this.decimalFormat2Places.format(this.minTideHeight)+"\n";
+        tabDelimitedResults += "median tide\t"+this.decimalFormat2Places.format(this.midEq.getHeight())+"\n";
+        tabDelimitedResults += "max tide\t"+this.decimalFormat2Places.format(this.maxTideHeight)+"\n";
         tabDelimitedResults += "\n";
         tabDelimitedResults += "median height floods\t"+ Integer.toString(this.midEq.getFloodCount())+"\n";        
         tabDelimitedResults += "\n";
