@@ -22,6 +22,7 @@ public class TideInterval {
     private Duration duration;
     
     private boolean isValid;
+    private String msg;
     
     public TideInterval(double beginHeight, double endHeight, Instant beginTime, Instant endTime) {
         this.beginHeight = beginHeight;
@@ -32,6 +33,7 @@ public class TideInterval {
         this.endTime = endTime;
         this.duration =  Duration.between(beginTime, endTime).abs();
         this.isValid = false;
+        this.msg = "new tide interval";
     }
 
     public static TideInterval buildFromNoaaLines(String noaaFileLine1, String noaaFileLine2) {
@@ -46,16 +48,37 @@ public class TideInterval {
             double level2 = Double.parseDouble(line2Data[1]);
             TideInterval ti = new TideInterval(level1,level2,time1,time2);
             ti.setValid(true);
+            ti.setMsg("");
             return ti;
         }
         catch (Exception exc) {
-//            System.out.println(exc.toString());
+            System.out.println(exc.toString());
 //            System.exit(1);
 //            exc.printStackTrace();
-            return new TideInterval(0,0,Instant.now(),Instant.now());
+            TideInterval ti = new TideInterval(0,0,Instant.now(),Instant.now());
+            ti.setMsg(exc.toString());
+            return ti;
         }
     }
    
+    public double getMaxHeight() {
+        if (this.beginHeight > this.endHeight) {
+            return this.beginHeight;
+        }
+        return this.endHeight;
+    }
+
+    public double getMinHeight() {
+        if (this.beginHeight < this.endHeight) {
+            return this.beginHeight;
+        }
+        return this.endHeight;
+    }
+    
+    public boolean isRising() {
+        return this.beginHeight < this.endHeight;
+    }
+    
     /**
      * @return the beginHeight
      */
@@ -166,5 +189,19 @@ public class TideInterval {
      */
     public void setValid(boolean isValid) {
         this.isValid = isValid;
+    }
+
+    /**
+     * @return the msg
+     */
+    public String getMsg() {
+        return msg;
+    }
+
+    /**
+     * @param msg the msg to set
+     */
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }

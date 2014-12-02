@@ -13,7 +13,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
-import java.time.Duration;
+import java.time.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Scanner;
@@ -26,6 +26,17 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
+
+
+/*
+TODO
+    - figure out accurate tide cycle counting
+    - test data set for may1 - oct 1 by hour (odd min-max counting, among other things)
+    - output as # cycles flooded, % cycles flooded, # duration flooded, % duration flooded
+    - separate output line for totals / summaries
+    - add excel format code to help doc
+*/
+
 /**
  *
  * @author Chris
@@ -45,14 +56,9 @@ public class MainWindow extends javax.swing.JFrame {
     private final Color loadSignifierColorNONE = new Color(153, 51, 0);
     private final Color loadSignifierColorLOADED = new Color(0, 102, 51);
 
-    private JTextField[] elevations = new JTextField[12];
-    private JLabel[] floodCountLabels = new JLabel[12];
-    private JLabel[] floodDurationLabels = new JLabel[12];
-        
-    private FileNameExtensionFilter delimitedFilesFilter;// = new FileNameExtensionFilter("Delimited files", "tab", "csv");
-//    FileFilter filter = new FileNameExtensionFilter("JPEG file", "jpg", "jpeg");
-// JFileChooser fileChooser = ...;
-// fileChooser.addChoosableFileFilter(filter);
+//    private ArrayList elevations;
+
+    private FileNameExtensionFilter delimitedFilesFilter;
     
     DecimalFormat decimalFormat2Places = new DecimalFormat("#.00");
     
@@ -78,59 +84,12 @@ public class MainWindow extends javax.swing.JFrame {
         
         this.tideIntervals = new ArrayList(200);
         this.elevationQueries = new ArrayList(200);
+//        this.elevations = new ArrayList(200);
         
         this.delimitedFilesFilter = new FileNameExtensionFilter("Delimited files", "tab", "csv");
         this.fileChooser = new JFileChooser();
         this.fileChooser.addChoosableFileFilter(this.delimitedFilesFilter);
         this.fileChooser.setFileFilter(delimitedFilesFilter);
-        
-        this.elevations[0]          = this.jTextField_e01;
-        this.floodCountLabels[0]    = this.jLabel_e01_flood_count;
-        this.floodDurationLabels[0] = this.jLabel_e01_flood_duration;
-
-        this.elevations[1]          = this.jTextField_e02;
-        this.floodCountLabels[1]    = this.jLabel_e02_flood_count;
-        this.floodDurationLabels[1] = this.jLabel_e02_flood_duration;
-
-        this.elevations[2]          = this.jTextField_e03;
-        this.floodCountLabels[2]    = this.jLabel_e03_flood_count;
-        this.floodDurationLabels[2] = this.jLabel_e03_flood_duration;
-
-        this.elevations[3]          = this.jTextField_e04;
-        this.floodCountLabels[3]    = this.jLabel_e04_flood_count;
-        this.floodDurationLabels[3] = this.jLabel_e04_flood_duration;
-
-        this.elevations[4]          = this.jTextField_e05;
-        this.floodCountLabels[4]    = this.jLabel_e05_flood_count;
-        this.floodDurationLabels[4] = this.jLabel_e05_flood_duration;
-
-        this.elevations[5]          = this.jTextField_e06;
-        this.floodCountLabels[5]    = this.jLabel_e06_flood_count;
-        this.floodDurationLabels[5] = this.jLabel_e06_flood_duration;
-
-        this.elevations[6]          = this.jTextField_e07;
-        this.floodCountLabels[6]    = this.jLabel_e07_flood_count;
-        this.floodDurationLabels[6] = this.jLabel_e07_flood_duration;
-
-        this.elevations[7]          = this.jTextField_e08;
-        this.floodCountLabels[7]    = this.jLabel_e08_flood_count;
-        this.floodDurationLabels[7] = this.jLabel_e08_flood_duration;
-
-        this.elevations[8]          = this.jTextField_e09;
-        this.floodCountLabels[8]    = this.jLabel_e09_flood_count;
-        this.floodDurationLabels[8] = this.jLabel_e09_flood_duration;
-
-        this.elevations[9]          = this.jTextField_e10;
-        this.floodCountLabels[9]    = this.jLabel_e10_flood_count;
-        this.floodDurationLabels[9] = this.jLabel_e10_flood_duration;
-
-        this.elevations[10]          = this.jTextField_e11;
-        this.floodCountLabels[10]    = this.jLabel_e11_flood_count;
-        this.floodDurationLabels[10] = this.jLabel_e11_flood_duration;
-
-        this.elevations[11]          = this.jTextField_e12;
-        this.floodCountLabels[11]    = this.jLabel_e12_flood_count;
-        this.floodDurationLabels[11] = this.jLabel_e12_flood_duration;
     }
     
     /**
@@ -143,52 +102,16 @@ public class MainWindow extends javax.swing.JFrame {
     private void initComponents() {
 
         jLabel2 = new javax.swing.JLabel();
-        jTextField_e01 = new javax.swing.JTextField();
-        jTextField_e02 = new javax.swing.JTextField();
-        jTextField_e03 = new javax.swing.JTextField();
-        jTextField_e04 = new javax.swing.JTextField();
-        jTextField_e05 = new javax.swing.JTextField();
-        jTextField_e06 = new javax.swing.JTextField();
-        jTextField_e07 = new javax.swing.JTextField();
-        jTextField_e08 = new javax.swing.JTextField();
-        jTextField_e09 = new javax.swing.JTextField();
-        jTextField_e10 = new javax.swing.JTextField();
-        jTextField_e11 = new javax.swing.JTextField();
-        jTextField_e12 = new javax.swing.JTextField();
         jButtonAnalyze = new javax.swing.JButton();
         jButtonLoad = new javax.swing.JButton();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel_e01_flood_duration = new javax.swing.JLabel();
-        jLabel_e01_flood_count = new javax.swing.JLabel();
-        jLabel_e02_flood_count = new javax.swing.JLabel();
-        jLabel_e02_flood_duration = new javax.swing.JLabel();
-        jLabel_e03_flood_count = new javax.swing.JLabel();
-        jLabel_e03_flood_duration = new javax.swing.JLabel();
-        jLabel_e04_flood_count = new javax.swing.JLabel();
-        jLabel_e04_flood_duration = new javax.swing.JLabel();
-        jLabel_e05_flood_count = new javax.swing.JLabel();
-        jLabel_e05_flood_duration = new javax.swing.JLabel();
-        jLabel_e06_flood_count = new javax.swing.JLabel();
-        jLabel_e06_flood_duration = new javax.swing.JLabel();
-        jLabel_e07_flood_count = new javax.swing.JLabel();
-        jLabel_e07_flood_duration = new javax.swing.JLabel();
-        jLabel_e08_flood_count = new javax.swing.JLabel();
-        jLabel_e08_flood_duration = new javax.swing.JLabel();
-        jLabel_e09_flood_count = new javax.swing.JLabel();
-        jLabel_e09_flood_duration = new javax.swing.JLabel();
-        jLabel_e10_flood_count = new javax.swing.JLabel();
-        jLabel_e10_flood_duration = new javax.swing.JLabel();
-        jLabel_e11_flood_count = new javax.swing.JLabel();
-        jLabel_e11_flood_duration = new javax.swing.JLabel();
-        jLabel_e12_flood_count = new javax.swing.JLabel();
-        jLabel_e12_flood_duration = new javax.swing.JLabel();
         jButtonSave = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTextAreaResults = new javax.swing.JTextArea();
         jLabel5 = new javax.swing.JLabel();
-        jLabelLoadSignifier = new javax.swing.JLabel();
+        jLabelMessages = new javax.swing.JLabel();
+        jLabelLoadSignifier1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextAreaElevations = new javax.swing.JTextArea();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenuFile = new javax.swing.JMenu();
         jMenuItemFileLoad = new javax.swing.JMenuItem();
@@ -208,43 +131,7 @@ public class MainWindow extends javax.swing.JFrame {
         jLabel2.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
         jLabel2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel2.setText("2. Enter Elevations");
-        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 81, 177, -1));
-
-        jTextField_e01.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e01, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 111, -1, -1));
-
-        jTextField_e02.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e02, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 137, -1, -1));
-
-        jTextField_e03.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e03, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 163, -1, -1));
-
-        jTextField_e04.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e04, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 189, -1, -1));
-
-        jTextField_e05.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e05, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 215, -1, -1));
-
-        jTextField_e06.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e06, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 241, -1, -1));
-
-        jTextField_e07.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e07, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 267, -1, -1));
-
-        jTextField_e08.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e08, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 293, -1, -1));
-
-        jTextField_e09.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e09, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 319, -1, -1));
-
-        jTextField_e10.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e10, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 345, -1, -1));
-
-        jTextField_e11.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e11, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 371, -1, -1));
-
-        jTextField_e12.setPreferredSize(new java.awt.Dimension(120, 20));
-        getContentPane().add(jTextField_e12, new org.netbeans.lib.awtextra.AbsoluteConstraints(41, 397, -1, -1));
+        getContentPane().add(jLabel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 60, 177, -1));
 
         jButtonAnalyze.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
         jButtonAnalyze.setText("3. Analyze");
@@ -253,7 +140,7 @@ public class MainWindow extends javax.swing.JFrame {
                 jButtonAnalyzeActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonAnalyze, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 435, 177, -1));
+        getContentPane().add(jButtonAnalyze, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 450, 180, -1));
 
         jButtonLoad.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
         jButtonLoad.setText("1. Load Tide Data");
@@ -264,139 +151,41 @@ public class MainWindow extends javax.swing.JFrame {
         });
         getContentPane().add(jButtonLoad, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 7, -1, -1));
 
-        jLabel3.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
-        jLabel3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel3.setText("4. Inspect Results");
-        getContentPane().add(jLabel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(257, 51, 183, -1));
-
-        jLabel1.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
-        jLabel1.setText("# floods");
-        getContentPane().add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(276, 87, -1, -1));
-
-        jLabel4.setFont(new java.awt.Font("SansSerif", 1, 12)); // NOI18N
-        jLabel4.setText("time flooded");
-        getContentPane().add(jLabel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(348, 87, -1, -1));
-
-        jLabel_e01_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e01_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e01_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 112, -1, -1));
-
-        jLabel_e01_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e01_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e01_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 112, -1, -1));
-
-        jLabel_e02_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e02_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e02_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 138, -1, -1));
-
-        jLabel_e02_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e02_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e02_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 138, -1, -1));
-
-        jLabel_e03_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e03_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e03_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 164, -1, -1));
-
-        jLabel_e03_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e03_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e03_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 164, -1, -1));
-
-        jLabel_e04_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e04_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e04_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 190, -1, -1));
-
-        jLabel_e04_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e04_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e04_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 190, -1, -1));
-
-        jLabel_e05_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e05_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e05_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 216, -1, -1));
-
-        jLabel_e05_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e05_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e05_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 216, -1, -1));
-
-        jLabel_e06_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e06_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e06_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 242, -1, -1));
-
-        jLabel_e06_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e06_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e06_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 242, -1, -1));
-
-        jLabel_e07_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e07_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e07_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 268, -1, -1));
-
-        jLabel_e07_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e07_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e07_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 268, -1, -1));
-
-        jLabel_e08_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e08_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e08_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 294, -1, -1));
-
-        jLabel_e08_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e08_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e08_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 294, -1, -1));
-
-        jLabel_e09_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e09_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e09_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 320, -1, -1));
-
-        jLabel_e09_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e09_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e09_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 320, -1, -1));
-
-        jLabel_e10_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e10_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e10_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 346, -1, -1));
-
-        jLabel_e10_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e10_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e10_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 346, -1, -1));
-
-        jLabel_e11_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e11_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e11_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 372, -1, -1));
-
-        jLabel_e11_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e11_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e11_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 372, -1, -1));
-
-        jLabel_e12_flood_count.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e12_flood_count.setText("# floods");
-        getContentPane().add(jLabel_e12_flood_count, new org.netbeans.lib.awtextra.AbsoluteConstraints(279, 398, -1, -1));
-
-        jLabel_e12_flood_duration.setFont(new java.awt.Font("SansSerif", 0, 12)); // NOI18N
-        jLabel_e12_flood_duration.setText("time flooded");
-        getContentPane().add(jLabel_e12_flood_duration, new org.netbeans.lib.awtextra.AbsoluteConstraints(350, 398, -1, -1));
-
         jButtonSave.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
-        jButtonSave.setText("5. Save");
+        jButtonSave.setText("4. Save");
+        jButtonSave.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jButtonSave.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButtonSaveActionPerformed(evt);
             }
         });
-        getContentPane().add(jButtonSave, new org.netbeans.lib.awtextra.AbsoluteConstraints(257, 435, 183, -1));
+        getContentPane().add(jButtonSave, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 60, -1, -1));
 
         jTextAreaResults.setColumns(20);
         jTextAreaResults.setRows(5);
         jScrollPane1.setViewportView(jTextAreaResults);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(459, 81, 473, 336));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 100, 760, 330));
 
         jLabel5.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
-        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jLabel5.setText("or 5. Copy (& Paste)");
-        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(458, 51, 474, -1));
+        jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
+        jLabel5.setText("or Copy (& Paste)");
+        getContentPane().add(jLabel5, new org.netbeans.lib.awtextra.AbsoluteConstraints(310, 60, 220, 30));
 
-        jLabelLoadSignifier.setFont(new java.awt.Font("SansSerif", 2, 18)); // NOI18N
-        jLabelLoadSignifier.setForeground(new java.awt.Color(153, 51, 0));
-        jLabelLoadSignifier.setText("no tide data loaded");
-        getContentPane().add(jLabelLoadSignifier, new org.netbeans.lib.awtextra.AbsoluteConstraints(193, 11, 739, -1));
+        jLabelMessages.setFont(new java.awt.Font("SansSerif", 2, 12)); // NOI18N
+        jLabelMessages.setForeground(new java.awt.Color(204, 0, 0));
+        getContentPane().add(jLabelMessages, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 450, 760, 30));
+
+        jLabelLoadSignifier1.setFont(new java.awt.Font("SansSerif", 2, 18)); // NOI18N
+        jLabelLoadSignifier1.setForeground(new java.awt.Color(153, 51, 0));
+        jLabelLoadSignifier1.setText("no tide data loaded");
+        getContentPane().add(jLabelLoadSignifier1, new org.netbeans.lib.awtextra.AbsoluteConstraints(202, 11, 770, -1));
+
+        jTextAreaElevations.setColumns(20);
+        jTextAreaElevations.setRows(5);
+        jScrollPane2.setViewportView(jTextAreaElevations);
+
+        getContentPane().add(jScrollPane2, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 100, 180, 330));
 
         jMenuFile.setText("File");
 
@@ -487,15 +276,19 @@ public class MainWindow extends javax.swing.JFrame {
         this.aboutWindow.setVisible(true);
     }//GEN-LAST:event_jMenuItemInfoAboutActionPerformed
     
-    private void handleFileLoad(java.awt.event.ActionEvent evt) {  
+    private void handleFileLoad(java.awt.event.ActionEvent evt) {
+        this.updateMessage("");
+        int errorCount = 0;
+        boolean messageShown = false;
         try {
             int result = this.fileChooser.showOpenDialog(this);
             if (result != JFileChooser.APPROVE_OPTION) {
+                System.out.println("No file selected!");
                 return;
             }
             // user selects a file
             File selectedFile = fileChooser.getSelectedFile();
-//            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
+            System.out.println("Selected file: " + selectedFile.getAbsolutePath());
             
             // open that file
             // read in the contents, building the arraylist of TideInterval objects in the process
@@ -514,6 +307,12 @@ public class MainWindow extends javax.swing.JFrame {
                     TideInterval ti = TideInterval.buildFromNoaaLines(fileLinePrev, fileLineCur);
                     if (ti.isValid()) {
                         this.tideIntervals.add(ti);
+                    } else {
+                        errorCount++;
+                        if (errorCount > 10 && ! messageShown) {
+                            messageShown = true;
+                            this.updateMessage("Tide data problem like: "+ti.getMsg());
+                        }
                     }
                     fileLinePrev = fileLineCur;
                     counter++;
@@ -526,19 +325,24 @@ public class MainWindow extends javax.swing.JFrame {
             this.updateLoadSignifier();
         } catch (FileNotFoundException ex) {
             Logger.getLogger(MainWindow.class.getName()).log(Level.SEVERE, null, ex);
+            errorCount++;
+            if (errorCount > 10 && ! messageShown) {
+                messageShown = true;
+                this.updateMessage("File load problem like: "+ex.toString());
+            }
         }
     }
     
     private void updateLoadSignifier() {
         if (this.tideIntervals.isEmpty()) {
-            this.jLabelLoadSignifier.setText("no tide data loaded");
-            this.jLabelLoadSignifier.setForeground(this.loadSignifierColorNONE);
+            this.jLabelLoadSignifier1 .setText("no tide data loaded");
+            this.jLabelLoadSignifier1.setForeground(this.loadSignifierColorNONE);
         } else {
             String signifierText = "tide data loaded: ";
             signifierText += Integer.toString(this.tideIntervals.size())+" intervals, ";
             signifierText += "from " + ((TideInterval) tideIntervals.get(0)).getBeginTime().toString() + " to " + ((TideInterval) tideIntervals.get(tideIntervals.size()-1)).getEndTime().toString();
-            this.jLabelLoadSignifier.setText(signifierText);
-            this.jLabelLoadSignifier.setForeground(this.loadSignifierColorLOADED);
+            this.jLabelLoadSignifier1.setText(signifierText);
+            this.jLabelLoadSignifier1.setForeground(this.loadSignifierColorLOADED);
         }
     }
 
@@ -578,23 +382,21 @@ public class MainWindow extends javax.swing.JFrame {
             return;
         }
         
+        this.updateMessage("");
+        int errorCount = 0;
+        boolean messageShown = false;
+                
         this.elevationQueries.clear();
 
-        this.minTideHeight = 10000;
-        this.maxTideHeight = -10000;
+        this.minTideHeight = 100000;
+        this.maxTideHeight = -100000;
         for (Object tiBase : this.tideIntervals) {
             TideInterval ti = (TideInterval) tiBase;
-            if (this.maxTideHeight < ti.getBeginHeight()) {
-                this.maxTideHeight = ti.getBeginHeight();
+            if (this.maxTideHeight < ti.getMaxHeight()) {
+                this.maxTideHeight = ti.getMaxHeight();
             }
-            if (this.minTideHeight > ti.getBeginHeight()) {
-                this.minTideHeight = ti.getBeginHeight();
-            }
-            if (this.maxTideHeight < ti.getEndHeight()) {
-                this.maxTideHeight = ti.getEndHeight();
-            }
-            if (this.minTideHeight > ti.getEndHeight()) {
-                this.minTideHeight = ti.getEndHeight();
+            if (this.minTideHeight > ti.getMinHeight()) {
+                this.minTideHeight = ti.getMinHeight();
             }
         }
         
@@ -602,28 +404,47 @@ public class MainWindow extends javax.swing.JFrame {
         this.submergedEq = new ElevationQuery(minTideHeight-1);
         this.submergedEq.setIsFlooded(true);
         
-        // shift empty elevation entries up and build the elevation queries from jTextField_e01 through _e12
-        int idxOfEmpty = -1;
-        for (int i=0;i<12;i++) {
-            String elevStr = this.elevations[i].getText().trim();
-            if ((elevStr.equals("")) && (idxOfEmpty == -1)) {
-                idxOfEmpty = i;
-            } else {
-                if (! elevStr.equals("")) {
-                    if (idxOfEmpty >= 0) {
-                        this.elevations[i].setText("");
-                        this.elevations[idxOfEmpty].setText(elevStr);
-                        idxOfEmpty++;
-                    }
-                    try {
-                        this.elevationQueries.add(new ElevationQuery(Double.parseDouble(elevStr)));
-                    }
-                    catch (java.lang.NumberFormatException exc) {
-                        System.out.println("BAD ELEVATION: "+elevStr);
+        this.elevationQueries = new ArrayList(200);
+        String[] elevTexts = this.jTextAreaElevations.getText().split("\n");
+        for (String elevText : elevTexts) {
+            String toParse = elevText.trim();
+            if (! toParse.isEmpty()) {
+                try {
+                    double e = Double.parseDouble(toParse);
+                    this.elevationQueries.add(new ElevationQuery(e));
+                }
+                catch (NumberFormatException exc) {
+                    errorCount++;
+                    if (errorCount > 4 && ! messageShown) {
+                        messageShown = true;
+                        this.updateMessage("Elevation parsing problem like: "+exc.toString());
                     }
                 }
             }
         }
+        
+//        // shift empty elevation entries up and build the elevation queries from jTextField_e01 through _e12
+//        int idxOfEmpty = -1;
+//        for (int i=0;i<12;i++) {
+//            String elevStr = this.elevations[i].getText().trim();
+//            if ((elevStr.equals("")) && (idxOfEmpty == -1)) {
+//                idxOfEmpty = i;
+//            } else {
+//                if (! elevStr.equals("")) {
+//                    if (idxOfEmpty >= 0) {
+//                        this.elevations[i].setText("");
+//                        this.elevations[idxOfEmpty].setText(elevStr);
+//                        idxOfEmpty++;
+//                    }
+//                    try {
+//                        this.elevationQueries.add(new ElevationQuery(Double.parseDouble(elevStr)));
+//                    }
+//                    catch (java.lang.NumberFormatException exc) {
+//                        System.out.println("BAD ELEVATION: "+elevStr);
+//                    }
+//                }
+//            }
+//        }
         
         // set the initial flood state
         TideInterval firstTi = (TideInterval) this.tideIntervals.get(0);
@@ -651,17 +472,15 @@ public class MainWindow extends javax.swing.JFrame {
         updateAnalysisResults();
     }
 
+    private void updateMessage(String s) {
+        this.jLabelMessages.setText(s);
+    } 
+    
     private void updateAnalysisResults() {
         // quick visual
-        for (int i=0; i<this.elevationQueries.size(); i++) {
-            ElevationQuery eq = (ElevationQuery) this.elevationQueries.get(i);
-            this.floodCountLabels[i].setText(Integer.toString(eq.getFloodCount()));
+        for (Object elevationQuerie : this.elevationQueries) {
+            ElevationQuery eq = (ElevationQuery) elevationQuerie;
             String durString = Long.toString(eq.getFloodDuration().toHours())+" hr, "+Long.toString(eq.getFloodDuration().toMinutes() - (eq.getFloodDuration().toHours()*60))+" min";
-            this.floodDurationLabels[i].setText(durString);
-        }
-        for (int j=this.elevationQueries.size(); j<12; j++) {
-            this.floodCountLabels[j].setText("# floods");
-            this.floodDurationLabels[j].setText("time flooded");
         }
         
         // copy-and-paste-able
@@ -681,12 +500,12 @@ public class MainWindow extends javax.swing.JFrame {
                 decimalFormat2Places.format(eqHr)+"\n";
         tabDelimitedResults += line;
 
-        for (int i=0; i<elevationQueries.size(); i++) {
-            ElevationQuery eq = (ElevationQuery) elevationQueries.get(i);
+        for (Object elevationQuerie : elevationQueries) {
+            ElevationQuery eq = (ElevationQuery) elevationQuerie;
             eqSecs = eq.getFloodDuration().getSeconds();
             eqMin = (double)eqSecs/60;
             eqHr = (double)eqSecs/3600;
-            line = this.elevations[i].getText()+"\t"+
+            line =  this.decimalFormat2Places.format(eq.getHeight())+"\t"+
                     Integer.toString(eq.getFloodCount())+"\t"+
                     Long.toString(eqSecs)+"\t"+
                     Long.toString((long)(eqMin))+"\t"+
@@ -735,6 +554,7 @@ public class MainWindow extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+                System.out.println("TideMiner started");
                 new MainWindow().setVisible(true);
             }
         });
@@ -744,36 +564,10 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JButton jButtonAnalyze;
     private javax.swing.JButton jButtonLoad;
     private javax.swing.JButton jButtonSave;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabelLoadSignifier;
-    private javax.swing.JLabel jLabel_e01_flood_count;
-    private javax.swing.JLabel jLabel_e01_flood_duration;
-    private javax.swing.JLabel jLabel_e02_flood_count;
-    private javax.swing.JLabel jLabel_e02_flood_duration;
-    private javax.swing.JLabel jLabel_e03_flood_count;
-    private javax.swing.JLabel jLabel_e03_flood_duration;
-    private javax.swing.JLabel jLabel_e04_flood_count;
-    private javax.swing.JLabel jLabel_e04_flood_duration;
-    private javax.swing.JLabel jLabel_e05_flood_count;
-    private javax.swing.JLabel jLabel_e05_flood_duration;
-    private javax.swing.JLabel jLabel_e06_flood_count;
-    private javax.swing.JLabel jLabel_e06_flood_duration;
-    private javax.swing.JLabel jLabel_e07_flood_count;
-    private javax.swing.JLabel jLabel_e07_flood_duration;
-    private javax.swing.JLabel jLabel_e08_flood_count;
-    private javax.swing.JLabel jLabel_e08_flood_duration;
-    private javax.swing.JLabel jLabel_e09_flood_count;
-    private javax.swing.JLabel jLabel_e09_flood_duration;
-    private javax.swing.JLabel jLabel_e10_flood_count;
-    private javax.swing.JLabel jLabel_e10_flood_duration;
-    private javax.swing.JLabel jLabel_e11_flood_count;
-    private javax.swing.JLabel jLabel_e11_flood_duration;
-    private javax.swing.JLabel jLabel_e12_flood_count;
-    private javax.swing.JLabel jLabel_e12_flood_duration;
+    private javax.swing.JLabel jLabelLoadSignifier1;
+    private javax.swing.JLabel jLabelMessages;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenu jMenuFile;
     private javax.swing.JMenu jMenuInfo;
@@ -783,19 +577,9 @@ public class MainWindow extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItemInfoAbout;
     private javax.swing.JMenuItem jMenuItemInfoHelp;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JTextArea jTextAreaElevations;
     private javax.swing.JTextArea jTextAreaResults;
-    private javax.swing.JTextField jTextField_e01;
-    private javax.swing.JTextField jTextField_e02;
-    private javax.swing.JTextField jTextField_e03;
-    private javax.swing.JTextField jTextField_e04;
-    private javax.swing.JTextField jTextField_e05;
-    private javax.swing.JTextField jTextField_e06;
-    private javax.swing.JTextField jTextField_e07;
-    private javax.swing.JTextField jTextField_e08;
-    private javax.swing.JTextField jTextField_e09;
-    private javax.swing.JTextField jTextField_e10;
-    private javax.swing.JTextField jTextField_e11;
-    private javax.swing.JTextField jTextField_e12;
     // End of variables declaration//GEN-END:variables
 }
