@@ -31,6 +31,9 @@ import javax.swing.filechooser.FileFilter;
 /*
 TODO
     - figure out accurate tide cycle counting
+        + from min and max elevations do cycle counts for 40, 50, and 60 % heights, and average those?
+        + NOTE: FIX CYCLE COUNTING FOR ELEVATION QUERIES!!!!
+            * current method doesn't really work... glitches on noisy data; figure out better peak/trough detection (look-ahead/behind?)
     - test data set for may1 - oct 1 by hour (odd min-max counting, among other things)
     - output as # cycles flooded, % cycles flooded, # duration flooded, % duration flooded
     - separate output line for totals / summaries
@@ -50,6 +53,10 @@ public class MainWindow extends javax.swing.JFrame {
     
     private double minTideHeight = 0;
     private double maxTideHeight = 0;
+    
+    private long numTidePeaks = 0;
+    private long numTideTroughs = 0;
+    private long totalTideSeconds = 0;
 
     private JFileChooser fileChooser;
 
@@ -377,10 +384,80 @@ public class MainWindow extends javax.swing.JFrame {
         }
     }
     
+    private void markAndCountTideExtremes() {
+        if (this.tideIntervals.isEmpty()) {
+            return;
+        }
+        
+        this.numTidePeaks = 0;
+        this.numTideTroughs = 0;
+        this.totalTideSeconds = 0;
+        
+        // general process is:
+        // cycle through all the intervals, and for each compare its average height to those ahead and behind (within a certain span)
+        // if this interval is the highest, mark it as a cycle peak
+        // if this interval is the lowest, mark it as a cycle trough
+        // NOTE: begin and end intervals simply don't check on non-existent intervals
+        
+        // this is the duration forward and backward to check
+        long comparisonSpanSeconds = 3600; // 1 hour
+        long intervalSizeSeconds = ((TideInterval)(this.tideIntervals.get(0))).getDuration().getSeconds();
+        int comparisonSpanMaxIntervals = Math.max(1, Math.round((float)comparisonSpanSeconds/(float)intervalSizeSeconds));
+        
+        int lookBackIntervals; // = 0;
+        int lookAheadIntervals; // = Math.min(comparisonSpanMaxIntervals, this.tideIntervals.size());
+        
+        // now do the checking, adjusting the lookBack and lookAhead as we progress through the tideIntervals
+        int tiSize = this.tideIntervals.size();
+        for (int iCur=0; iCur<tiSize; iCur++) {
+            TideInterval ti = (TideInterval)(this.tideIntervals.get(iCur));
+                        
+            double basis = ti.getAverageHeight();
+            boolean isPeak = true;
+            boolean isTrough = true;
+            
+            // update intervals
+            lookBackIntervals = Math.min(comparisonSpanMaxIntervals, iCur);
+            lookAheadIntervals = Math.min(comparisonSpanMaxIntervals, this.tideIntervals.size()-1-iCur);
+
+            // check earlier
+            for (int iPre = 1; (iPre<=lookBackIntervals) && (isPeak || isTrough); iPre++) {
+                double check = ((TideInterval)(this.tideIntervals.get(iCur-iPre))).getAverageHeight();
+                if (check > basis) {
+                    isPeak = false;
+                }
+                if (check < basis) {
+                    isTrough = false;
+                }
+            }
+
+            // check later
+            for (int iPost = 1; (iPost<=lookAheadIntervals) && (isPeak || isTrough); iPost++) {
+                double check = ((TideInterval)(this.tideIntervals.get(iCur+iPost))).getAverageHeight();
+                if (check > basis) {
+                    isPeak = false;
+                }
+                if (check < basis) {
+                    isTrough = false;
+                }
+            }
+
+            // set state
+            ti.setPeak(isPeak);
+            ti.setTrough(isTrough);
+            
+            if (isPeak) { this.numTidePeaks++; }
+            if (isTrough) { this.numTideTroughs++; }
+            this.totalTideSeconds += ti.getDuration().getSeconds();
+        }
+    }
+    
     private void handleAnalysis() {
         if (this.tideIntervals.isEmpty()) {
             return;
         }
+        
+        this.markAndCountTideExtremes();
         
         this.updateMessage("");
         int errorCount = 0;
@@ -402,7 +479,7 @@ public class MainWindow extends javax.swing.JFrame {
         
         this.midEq = new ElevationQuery((maxTideHeight+minTideHeight)/2);
         this.submergedEq = new ElevationQuery(minTideHeight-1);
-        this.submergedEq.setIsFlooded(true);
+//        this.submergedEq.setIsFlooded(true);
         
         this.elevationQueries = new ArrayList(200);
         String[] elevTexts = this.jTextAreaElevations.getText().split("\n");
@@ -446,17 +523,17 @@ public class MainWindow extends javax.swing.JFrame {
 //            }
 //        }
         
-        // set the initial flood state
-        TideInterval firstTi = (TideInterval) this.tideIntervals.get(0);
-        for (Object eqBase : this.elevationQueries) {
-            ElevationQuery eq = (ElevationQuery) eqBase;
-            if (eq.getHeight() < firstTi.getBeginHeight()) {
-                eq.setIsFlooded(true);
-            }
-        }
-        if (this.midEq.getHeight() < firstTi.getBeginHeight()) {
-            this.midEq.setIsFlooded(true);
-        }
+//        // set the initial flood state
+//        TideInterval firstTi = (TideInterval) this.tideIntervals.get(0);
+//        for (Object eqBase : this.elevationQueries) {
+//            ElevationQuery eq = (ElevationQuery) eqBase;
+//            if (eq.getHeight() < firstTi.getBeginHeight()) {
+//                eq.setIsFlooded(true);
+//            }
+//        }
+//        if (this.midEq.getHeight() < firstTi.getBeginHeight()) {
+//            this.midEq.setIsFlooded(true);
+//        }
         
         // run through the tideIntervals, processing each interval for each elevationQuery
         for (Object tiBase : this.tideIntervals) {
@@ -489,16 +566,17 @@ public class MainWindow extends javax.swing.JFrame {
     
     private String getAnalysisResultsAsTabDelimited() {
         // copy-and-paste-able
-        String tabDelimitedResults = "ELEV\t# EXP/FLD\tDUR. AS SEC\tDUR. AS MIN\tDUR. AS HR\n";
+        String tabDelimitedResults = "ELEV\t% FLOODS\t# FLOODS\t% FL DUR\tFL. DUR. SEC\tFL. DUR. MIN\tFL. DUR. HR\t% EXPOSE\t# EXPOSE\n";
         long eqSecs = this.submergedEq.getFloodDuration().getSeconds();
         double eqMin = (double)eqSecs/60;
         double eqHr = (double)eqSecs/3600;
-        String line = "SUBMERGED\t"+
-                Integer.toString(this.submergedEq.getFloodCount())+"\t"+
-                Long.toString(eqSecs)+"\t"+
-                Long.toString((long)(eqMin))+"\t"+
-                decimalFormat2Places.format(eqHr)+"\n";
-        tabDelimitedResults += line;
+        String line;
+//        String line = "SUBMERGED\t"+
+//                Integer.toString(this.submergedEq.getFloodCount())+"\t"+
+//                Long.toString(eqSecs)+"\t"+
+//                Long.toString((long)(eqMin))+"\t"+
+//                decimalFormat2Places.format(eqHr)+"\n";
+//        tabDelimitedResults += line;
 
         for (Object elevationQuerie : elevationQueries) {
             ElevationQuery eq = (ElevationQuery) elevationQuerie;
@@ -506,19 +584,28 @@ public class MainWindow extends javax.swing.JFrame {
             eqMin = (double)eqSecs/60;
             eqHr = (double)eqSecs/3600;
             line =  this.decimalFormat2Places.format(eq.getHeight())+"\t"+
+                    this.decimalFormat2Places.format((double)eq.getFloodCount()/(double)this.numTidePeaks)+"\t"+
                     Integer.toString(eq.getFloodCount())+"\t"+
+                    this.decimalFormat2Places.format((double)eqSecs/(double)this.totalTideSeconds)+"\t"+                    
                     Long.toString(eqSecs)+"\t"+
                     Long.toString((long)(eqMin))+"\t"+
-                    decimalFormat2Places.format(eqHr)+"\n";
+                    decimalFormat2Places.format(eqHr)+"\t"+
+                    this.decimalFormat2Places.format((double)eq.getExposureCount()/(double)this.numTideTroughs)+"\t"+
+                    Integer.toString(eq.getExposureCount())+"\n";
             tabDelimitedResults += line;
         }
         
         tabDelimitedResults += "\n";
-        tabDelimitedResults += "min tide\t"+this.decimalFormat2Places.format(this.minTideHeight)+"\n";
-        tabDelimitedResults += "median tide\t"+this.decimalFormat2Places.format(this.midEq.getHeight())+"\n";
-        tabDelimitedResults += "max tide\t"+this.decimalFormat2Places.format(this.maxTideHeight)+"\n";
-        tabDelimitedResults += "\n";
-        tabDelimitedResults += "median height floods\t"+ Integer.toString(this.midEq.getFloodCount())+"\n";        
+
+        tabDelimitedResults += "TOTAL FLOODS:\t"+this.numTidePeaks+"\n";
+        tabDelimitedResults += "TOTAL EXPOSURES:\t"+this.numTideTroughs +"\n";
+        tabDelimitedResults += "TOTAL DURATION (SEC):\t"+this.totalTideSeconds+"\n";
+
+//        tabDelimitedResults += "min tide\t"+this.decimalFormat2Places.format(this.minTideHeight)+"\n";
+//        tabDelimitedResults += "median tide\t"+this.decimalFormat2Places.format(this.midEq.getHeight())+"\n";
+//        tabDelimitedResults += "max tide\t"+this.decimalFormat2Places.format(this.maxTideHeight)+"\n";
+//        tabDelimitedResults += "\n";
+//        tabDelimitedResults += "median height floods\t"+ Integer.toString(this.midEq.getFloodCount())+"\n";        
         tabDelimitedResults += "\n";
 
         return tabDelimitedResults;

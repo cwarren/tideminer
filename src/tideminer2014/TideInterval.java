@@ -21,6 +21,9 @@ public class TideInterval {
     private Instant endTime;
     private Duration duration;
     
+    private boolean peak;
+    private boolean trough;
+    
     private boolean isValid;
     private String msg;
     
@@ -32,6 +35,8 @@ public class TideInterval {
         this.beginTime = beginTime;
         this.endTime = endTime;
         this.duration =  Duration.between(beginTime, endTime).abs();
+        this.peak = false;
+        this.trough = false;
         this.isValid = false;
         this.msg = "new tide interval";
     }
@@ -73,6 +78,10 @@ public class TideInterval {
             return this.beginHeight;
         }
         return this.endHeight;
+    }
+    
+    public double getAverageHeight() {
+        return (this.beginHeight + this.endHeight)/2;
     }
     
     public boolean isRising() {
@@ -203,5 +212,33 @@ public class TideInterval {
      */
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    /**
+     * @return the peak
+     */
+    public boolean isPeak() {
+        return peak;
+    }
+
+    /**
+     * @param peak the peak to set
+     */
+    public void setPeak(boolean peak) {
+        this.peak = peak;
+    }
+
+    /**
+     * @return the trough
+     */
+    public boolean isTrough() {
+        return trough;
+    }
+
+    /**
+     * @param trough the trough to set
+     */
+    public void setTrough(boolean trough) {
+        this.trough = trough;
     }
 }
