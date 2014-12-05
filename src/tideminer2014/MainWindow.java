@@ -81,7 +81,7 @@ public class MainWindow extends javax.swing.JFrame {
     }
 
     private void myInits() {
-        this.setBounds(100,100, this.getWidth(), this.getHeight());
+        this.setBounds(100,100, 1025, 565);
         
         helpWindow = new HelpWindow();
         helpWindow.setBounds(this.getX()+50, this.getY()+50, helpWindow.getWidth(), helpWindow.getHeight());
@@ -130,9 +130,8 @@ public class MainWindow extends javax.swing.JFrame {
         jMenuItemInfoHelp = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setMinimumSize(new java.awt.Dimension(962, 535));
-        setPreferredSize(new java.awt.Dimension(962, 535));
-        setResizable(false);
+        setMinimumSize(new java.awt.Dimension(982, 535));
+        setPreferredSize(new java.awt.Dimension(982, 535));
         getContentPane().setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
         jLabel2.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
@@ -172,7 +171,7 @@ public class MainWindow extends javax.swing.JFrame {
         jTextAreaResults.setRows(5);
         jScrollPane1.setViewportView(jTextAreaResults);
 
-        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 100, 760, 330));
+        getContentPane().add(jScrollPane1, new org.netbeans.lib.awtextra.AbsoluteConstraints(210, 100, 790, 330));
 
         jLabel5.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
@@ -465,21 +464,22 @@ public class MainWindow extends javax.swing.JFrame {
                 
         this.elevationQueries.clear();
 
-        this.minTideHeight = 100000;
-        this.maxTideHeight = -100000;
+        TideInterval firstTi = (TideInterval) this.tideIntervals.get(0);
+        this.minTideHeight = firstTi.getMinHeight();
+        this.maxTideHeight = firstTi.getMaxHeight();
+        
         for (Object tiBase : this.tideIntervals) {
             TideInterval ti = (TideInterval) tiBase;
-            if (this.maxTideHeight < ti.getMaxHeight()) {
+            if (ti.getMaxHeight() > this.maxTideHeight) {
                 this.maxTideHeight = ti.getMaxHeight();
             }
-            if (this.minTideHeight > ti.getMinHeight()) {
+            if (ti.getMinHeight() < this.minTideHeight) {
                 this.minTideHeight = ti.getMinHeight();
             }
         }
         
         this.midEq = new ElevationQuery((maxTideHeight+minTideHeight)/2);
         this.submergedEq = new ElevationQuery(minTideHeight-1);
-//        this.submergedEq.setIsFlooded(true);
         
         this.elevationQueries = new ArrayList(200);
         String[] elevTexts = this.jTextAreaElevations.getText().split("\n");
@@ -499,41 +499,6 @@ public class MainWindow extends javax.swing.JFrame {
                 }
             }
         }
-        
-//        // shift empty elevation entries up and build the elevation queries from jTextField_e01 through _e12
-//        int idxOfEmpty = -1;
-//        for (int i=0;i<12;i++) {
-//            String elevStr = this.elevations[i].getText().trim();
-//            if ((elevStr.equals("")) && (idxOfEmpty == -1)) {
-//                idxOfEmpty = i;
-//            } else {
-//                if (! elevStr.equals("")) {
-//                    if (idxOfEmpty >= 0) {
-//                        this.elevations[i].setText("");
-//                        this.elevations[idxOfEmpty].setText(elevStr);
-//                        idxOfEmpty++;
-//                    }
-//                    try {
-//                        this.elevationQueries.add(new ElevationQuery(Double.parseDouble(elevStr)));
-//                    }
-//                    catch (java.lang.NumberFormatException exc) {
-//                        System.out.println("BAD ELEVATION: "+elevStr);
-//                    }
-//                }
-//            }
-//        }
-        
-//        // set the initial flood state
-//        TideInterval firstTi = (TideInterval) this.tideIntervals.get(0);
-//        for (Object eqBase : this.elevationQueries) {
-//            ElevationQuery eq = (ElevationQuery) eqBase;
-//            if (eq.getHeight() < firstTi.getBeginHeight()) {
-//                eq.setIsFlooded(true);
-//            }
-//        }
-//        if (this.midEq.getHeight() < firstTi.getBeginHeight()) {
-//            this.midEq.setIsFlooded(true);
-//        }
         
         // run through the tideIntervals, processing each interval for each elevationQuery
         for (Object tiBase : this.tideIntervals) {
@@ -566,17 +531,11 @@ public class MainWindow extends javax.swing.JFrame {
     
     private String getAnalysisResultsAsTabDelimited() {
         // copy-and-paste-able
-        String tabDelimitedResults = "ELEV\t% FLOODS\t# FLOODS\t% FL DUR\tFL. DUR. SEC\tFL. DUR. MIN\tFL. DUR. HR\t% EXPOSE\t# EXPOSE\n";
+        String tabDelimitedResults = "ELEV\t% FLOODS\t# FLOODS\t% FL DUR\tFL. DUR. SEC\tFL. DUR. MIN\tFL. DUR. HR\t% EXPOSES\t# EXPOSES\n";
         long eqSecs = this.submergedEq.getFloodDuration().getSeconds();
         double eqMin = (double)eqSecs/60;
         double eqHr = (double)eqSecs/3600;
         String line;
-//        String line = "SUBMERGED\t"+
-//                Integer.toString(this.submergedEq.getFloodCount())+"\t"+
-//                Long.toString(eqSecs)+"\t"+
-//                Long.toString((long)(eqMin))+"\t"+
-//                decimalFormat2Places.format(eqHr)+"\n";
-//        tabDelimitedResults += line;
 
         for (Object elevationQuerie : elevationQueries) {
             ElevationQuery eq = (ElevationQuery) elevationQuerie;
@@ -596,10 +555,15 @@ public class MainWindow extends javax.swing.JFrame {
         }
         
         tabDelimitedResults += "\n";
-
+        tabDelimitedResults += "MIN TIDE HEIGHT:\t"+decimalFormat2Places.format(this.minTideHeight)+"\n";
+        tabDelimitedResults += "MAX TIDE HEIGHT:\t"+decimalFormat2Places.format(this.maxTideHeight) +"\n";
+        tabDelimitedResults += "\n";
         tabDelimitedResults += "TOTAL FLOODS:\t"+this.numTidePeaks+"\n";
         tabDelimitedResults += "TOTAL EXPOSURES:\t"+this.numTideTroughs +"\n";
+        tabDelimitedResults += "\n";
         tabDelimitedResults += "TOTAL DURATION (SEC):\t"+this.totalTideSeconds+"\n";
+        tabDelimitedResults += "TOTAL DURATION (MIN):\t"+decimalFormat2Places.format((double)this.totalTideSeconds/60)+"\n";
+        tabDelimitedResults += "TOTAL DURATION (HR):\t"+decimalFormat2Places.format((double)this.totalTideSeconds/3600)+"\n";
 
 //        tabDelimitedResults += "min tide\t"+this.decimalFormat2Places.format(this.minTideHeight)+"\n";
 //        tabDelimitedResults += "median tide\t"+this.decimalFormat2Places.format(this.midEq.getHeight())+"\n";
