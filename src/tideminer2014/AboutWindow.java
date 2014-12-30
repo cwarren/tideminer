@@ -54,7 +54,7 @@ public class AboutWindow extends javax.swing.JFrame {
         jTextArea1.setFont(new java.awt.Font("SansSerif", 0, 18)); // NOI18N
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(5);
-        jTextArea1.setText("TideMiner is written in Java (JDK 8), using the NetBeans IDE. Source code fro TideMiner is available under the GNU GPLv3 license (see http://www.gnu.org/copyleft/gpl.html for details). In very brief, that means that you're free (and even encouraged) to copy, modify if you wish, and share this program. However, if you use this in your work I ask, but do not require, that you credit me to whatever degree you feel appropriate in any resulting publications.");
+        jTextArea1.setText("TideMiner is written in Java (JDK 8), using the NetBeans IDE. Source code fro TideMiner is available under the GNU GPLv3 license (see http://www.gnu.org/copyleft/gpl.html for details). In very brief, that means that you're free (and even encouraged) to copy, modify if you wish, and share this program. However, if you use this in your work I ask, but do not require, that you credit me to whatever degree you feel appropriate in any resulting publications.\n\nTideMiner is available on github at https://github.com/cwarren/tideminer");
         jTextArea1.setWrapStyleWord(true);
         jTextArea1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jTextArea1.setMargin(new java.awt.Insets(2, 6, 2, 6));
