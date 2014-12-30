@@ -306,6 +306,7 @@ public class MainWindow extends javax.swing.JFrame {
             Scanner sc = new Scanner(selectedFile);
             String fileLinePrev, fileLineCur;
             int counter = 0;
+            this.tideIntervals.clear();
             if (sc.hasNextLine()) {
                 fileLinePrev = sc.nextLine();
                 while (sc.hasNextLine()) {
